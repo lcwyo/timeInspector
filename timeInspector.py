@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import time, os
 from datetime import datetime, timedelta
+from tkinter import ttk
 
 try:
     # Python2
@@ -132,8 +133,8 @@ if __name__ == '__main__':
     goHome_text = tk.Label(text_frame, text='You can leave the building at')
     goHome_display = tk.Label(time_frame, textvariable=goHome_display_label)
 
-    button = tk.Button(button_frame, text="OK", command=callback)
-    button_close = tk.Button(button_frame, text="Close", command=close_window)
+    button = ttk.Button(button_frame, text="OK", command=callback)
+    button_close = ttk.Button(button_frame, text="Close", command=close_window)
 
     mainWindow.bind('<Return>', callback)
 
@@ -161,7 +162,7 @@ if __name__ == '__main__':
     else:
         extension = 'ppm'
 
-    photo = tk.PhotoImage(file="./ninja." + extension)
+    photo = tk.PhotoImage(file="./res/ninja." + extension)
     image_label = tk.Label(image_frame, image=photo).pack(side='left')
 
     tick()
