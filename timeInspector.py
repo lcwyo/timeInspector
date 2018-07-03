@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import time, os
+import time
 from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
@@ -16,7 +16,7 @@ class TimeInspector(tk.Tk):
         tk.Tk.iconbitmap(self, default="./res/logo.ico")
         tk.Tk.wm_title(self, "TimeInspector 2.0")
         tk.Tk.geometry(self, '375x160')
-        tk.Tk.resizable(self, width=False, height=False)
+        # tk.Tk.resizable(self, width=False, height=False)
 
         menu = tk.Menu(self)
         self.config(menu=menu)
@@ -41,7 +41,7 @@ class TimeInspector(tk.Tk):
 
         self.frames = {}
 
-        for F in (StartPage, AboutPage, MainPage, HelpPage):
+        for F in (TestPage, AboutPage, MainPage, HelpPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=1, sticky="nsew")
@@ -53,7 +53,7 @@ class TimeInspector(tk.Tk):
         frame.tkraise()
 
 
-class StartPage(tk.Frame):
+class TestPage(tk.Frame):
 
     def __init__(self, parent, controller):
 
@@ -89,26 +89,25 @@ class StartPage(tk.Frame):
 class HelpPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.label = tk.Label(self, text="""Time Inspector was made \nso that I wouldn't be late""")
-        self.label.pack(pady=10, padx=10)
+        self.message = tk.Message(self,
+                                  text="Time Inspector was made so that I wouldn't be late going home.",
+                                  justify="left",
+                                  width=175 )
+        self.message.grid(row=0, column=1, pady=10, padx=10)
 
         self.photo = tk.PhotoImage(file="./res/kmf.png")
-        self.image_label = tk.Label(self, image=self.photo)
-        self.image_label.pack(side='left')
+        self.button = tk.Button(self, image=self.photo,
+                                relief='flat',
+                                highlightthickness=0,
+                                command=lambda: controller.show_frame(MainPage))
 
-        self.button2 = ttk.Button(self, text="TimeInspector",
-                                  command=lambda: controller.show_frame(MainPage))
-        self.button2.pack()
-
-        self.button3 = ttk.Button(self, text="About",
-                                  command=lambda: controller.show_frame(AboutPage))
-        self.button3.pack()
-
+        self.button.grid(row=0, column=0, rowspan=2)
 
 class AboutPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.label = tk.Label(self, text="""Time Inspector was made \nso that I wouldn't be late""")
+        self.label = tk.Message(self,
+                                text="Time Inspector was made so that I wouldn't be late going home.\n\n© 2017 Lance Chatwell")
         self.label.grid(row=0, column=1, pady=10, padx=10)
 
         self.photo = tk.PhotoImage(file="./res/bell.png")
@@ -116,10 +115,8 @@ class AboutPage(tk.Frame):
         self.image_label.grid(row=0, column=0, pady=10, padx=10)
 
 
-
 class MainPage(tk.Frame):
     def __init__(self, parent, controller):
-
         tk.Frame.__init__(self, parent)
         text_frame = tk.Frame(self, bd=0, relief="groove")
         time_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
