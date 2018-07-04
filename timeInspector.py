@@ -13,26 +13,27 @@ class TimeInspector(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        tk.Tk.iconbitmap(self, default="./res/logo.ico")
+        tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
         tk.Tk.wm_title(self, "TimeInspector 2.0")
-        tk.Tk.geometry(self, '375x160')
-        # tk.Tk.resizable(self, width=False, height=False)
+        tk.Tk.geometry(self, '380x165')
+        tk.Tk.resizable(self, width=False, height=False)
 
-        menu = tk.Menu(self)
-        self.config(menu=menu)
+        self.menu = tk.Menu(self)
 
-        filemenu = tk.Menu(menu)
-        filemenu.add_command(label='Settings', command=lambda: self.show_frame(AboutPage))
+        self.config(menu=self.menu)
+
+        filemenu = tk.Menu(self.menu)
+        filemenu.add_command(label='Settings', command=lambda: self.show_frame(SettingsPage))
         filemenu.add_command(label='Time Inspector 2.0', command=lambda: self.show_frame(MainPage))
-        filemenu.add_command(label='Pizza Inspector', command=lambda: self.show_frame(MainPage))
+        filemenu.add_command(label='Pizza Inspector', command=lambda: self.show_frame(TestPage))
         filemenu.add_separator()
         filemenu.add_command(label='Exit', command=quit)
-        menu.add_cascade(label='File', menu=filemenu)
+        self.menu.add_cascade(label='File', menu=filemenu)
 
-        about = tk.Menu(menu)
+        about = tk.Menu(self.menu)
         about.add_cascade(label='Help', command=lambda: self.show_frame(HelpPage))
         about.add_command(label='About', command=lambda: self.show_frame(AboutPage))
-        menu.add_cascade(label='Help', menu=about)
+        self.menu.add_cascade(label='Help', menu=about)
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -41,7 +42,7 @@ class TimeInspector(tk.Tk):
 
         self.frames = {}
 
-        for F in (TestPage, AboutPage, MainPage, HelpPage):
+        for F in (TestPage, AboutPage, MainPage, HelpPage, KmfPage, SettingsPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=1, sticky="nsew")
@@ -66,7 +67,7 @@ class TestPage(tk.Frame):
         else:
             extension = 'ppm'
 
-        self.photo = tk.PhotoImage(file="./res/ninja." + extension)
+        self.photo = tk.PhotoImage(file="./res/img/ninja." + extension)
         image_label = tk.Label(self, image=self.photo)
         image_label.grid(row=1, column=0)
 
@@ -86,22 +87,37 @@ class TestPage(tk.Frame):
         button3.grid(row=2, column=0)
 
 
-class HelpPage(tk.Frame):
+class SettingsPage(tk.Frame):
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Time Inspector", font=LARGE_FONT)
+        label.grid(row=0, column=0, columnspan=2)
+
+
+class HelpPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent, bg='white')
         self.message = tk.Message(self,
-                                  text="Time Inspector was made so that I wouldn't be late going home.",
+                                  text='Enter the time you clocked in the "start time" box & click ok.\
+                                  \nTimeInspector will calculate the time you have left before you can clock out.\
+                                  \nIf you have overtime, it will display the overtime earned'
+                                  ,
                                   justify="left",
-                                  width=175 )
+                                  bg='white',
+                                  width=175)
+        self.message.config(font=('Times', 8))
         self.message.grid(row=0, column=1, pady=10, padx=10)
 
-        self.photo = tk.PhotoImage(file="./res/kmf.png")
+        self.photo = tk.PhotoImage(file="./res/img/kmf.png")
         self.button = tk.Button(self, image=self.photo,
                                 relief='flat',
+                                bg='white',
                                 highlightthickness=0,
-                                command=lambda: controller.show_frame(MainPage))
+                                command=lambda: controller.show_frame(KmfPage))
 
         self.button.grid(row=0, column=0, rowspan=2)
+
 
 class AboutPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -110,7 +126,19 @@ class AboutPage(tk.Frame):
                                 text="Time Inspector was made so that I wouldn't be late going home.\n\n© 2017 Lance Chatwell")
         self.label.grid(row=0, column=1, pady=10, padx=10)
 
-        self.photo = tk.PhotoImage(file="./res/bell.png")
+        self.photo = tk.PhotoImage(file="./res/img/ninja.png")
+        self.image_label = tk.Label(self, image=self.photo)
+        self.image_label.grid(row=0, column=0, pady=10, padx=10)
+
+
+class KmfPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.label = tk.Message(self,
+                                text="This bell is here so that you don't have to sit high and dry.\n")
+        self.label.grid(row=0, column=1, pady=10, padx=10)
+
+        self.photo = tk.PhotoImage(file="./res/img/bell.png")
         self.image_label = tk.Label(self, image=self.photo)
         self.image_label.grid(row=0, column=0, pady=10, padx=10)
 
@@ -126,7 +154,7 @@ class MainPage(tk.Frame):
         text_frame.grid(row=1, column=0, sticky="ew")
         time_frame.grid(row=1, column=1, sticky="ew")
         button_frame.grid(row=6, column=0, columnspan=6, padx=2)
-        image_frame.grid(row=1, column=3, rowspan=6, sticky="ew")
+        image_frame.grid(row=0, column=3, rowspan=6, sticky="ew")
 
         self.currentTime = tk.Label(text_frame, text='Current Time')
         self.currentTime_Display = tk.Label(time_frame)
@@ -149,7 +177,7 @@ class MainPage(tk.Frame):
         goHome_text = tk.Label(text_frame, text='You can leave the building at')
         goHome_display = tk.Label(time_frame, textvariable=self.goHome_display_label)
 
-        button = ttk.Button(button_frame, text="OK", command=self.callback)
+        button_ok = ttk.Button(button_frame, text="OK", command=self.callback)
         button_close = ttk.Button(button_frame, text="Close", command=quit)
 
         self.bind('<Return>', self.callback)
@@ -169,8 +197,8 @@ class MainPage(tk.Frame):
         goHome_text.grid(row=4, column=0, sticky='nw')
         goHome_display.grid(row=4, column=1, sticky='nw')
 
-        button.grid(row=1, column=0, columnspan=2)
-        button_close.grid(row=1, column=2, columnspan=2)
+        button_ok.grid(row=1, column=0, sticky='nw')
+        button_close.grid(row=1, column=1, sticky='nw')
         self.tick()
 
         if tk.TkVersion >= 8.6:
@@ -178,9 +206,9 @@ class MainPage(tk.Frame):
         else:
             self.extension = 'ppm'
 
-        self.photo = tk.PhotoImage(file="./res/ninja." + self.extension)
+        self.photo = tk.PhotoImage(file="./res/img/inspector." + self.extension)
         self.image_label = tk.Label(image_frame, image=self.photo)
-        self.image_label.pack(side='right')
+        self.image_label.pack(side='top')
 
     def tick(self, time1=''):
         self.time1 = time1
