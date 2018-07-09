@@ -4,8 +4,7 @@ import time
 from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
-
-LARGE_FONT = ("Comic Sans", 18)
+from configparser import ConfigParser
 
 
 class TimeInspector(tk.Tk):
@@ -18,6 +17,7 @@ class TimeInspector(tk.Tk):
         tk.Tk.geometry(self, '380x165')
         tk.Tk.resizable(self, width=False, height=False)
 
+        self.option_add("*Font", "Garamound")
         self.menu = tk.Menu(self)
 
         self.config(menu=self.menu)
@@ -42,7 +42,7 @@ class TimeInspector(tk.Tk):
 
         self.frames = {}
 
-        for F in (TestPage, AboutPage, MainPage, HelpPage, KmfPage, SettingsPage, LunchPage):
+        for F in (AboutPage, MainPage, HelpPage, KmfPage, SettingsPage, LunchPage):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=1, sticky="nsew")
@@ -54,45 +54,55 @@ class TimeInspector(tk.Tk):
         frame.tkraise()
 
 
-class TestPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Time Inspector", font=LARGE_FONT)
-        label.grid(row=0, column=0, columnspan=2)
-
-        if tk.TkVersion >= 8.6:
-            extension = 'png'
-        else:
-            extension = 'ppm'
-
-        self.photo = tk.PhotoImage(file="./res/img/ninja." + extension)
-        image_label = tk.Label(self, image=self.photo)
-        image_label.grid(row=1, column=0)
-
-        self.button_frame = tk.Frame(self, bd=0, relief="sunken", padx=15)
-        self.button_frame.grid(row=1, column=2)
-
-        button1 = ttk.Button(self.button_frame, text="Start TimeInspector", width=18,
-                             command=lambda: controller.show_frame(MainPage))
-
-        button2 = ttk.Button(self.button_frame, text="About TimeInspector", width=18,
-                             command=lambda: controller.show_frame(AboutPage))
-
-        button3 = ttk.Button(self.button_frame, text="Nevermind", width=18,
-                             command=quit)
-        button1.grid(row=0, column=0)
-        button2.grid(row=1, column=0)
-        button3.grid(row=2, column=0)
-
-
 class SettingsPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Time Inspector", font=LARGE_FONT)
-        label.grid(row=0, column=0, columnspan=2)
+        self.settings_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
+        self.blank_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
+        self.button_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
+        self.image_frame = tk.Frame(self, bd=0, relief="groove")
+
+        self.label = tk.Label(self, text="Time Inspector Settings", font="Comic 14")
+        self.label.grid(row=0, column=0, columnspan=3)
+
+        self.working_label = ttk.Label(self.settings_frame, text="Working time ")
+        self.break_label = ttk.Label(self.settings_frame, text="Break time ")
+
+        self.wt_entry = ttk.Entry(self.settings_frame, width=3)
+        self.bt_entry = ttk.Entry(self.settings_frame, width=3)
+
+        self.working_hours_label = ttk.Label(self.settings_frame, text=" (hours)")
+        self.break_min_label = ttk.Label(self.settings_frame, text=" (min)")
+
+        self.working_label.grid(row=1, column=0)
+        self.wt_entry.grid(row=1, column=2)
+
+        self.break_label.grid(row=2, column=0)
+        self.bt_entry.grid(row=2, column=2)
+
+        self.working_hours_label.grid(row=1, column=3)
+        self.break_min_label.grid(row=2, column=3)
+
+        self.wt_entry.insert(0, "8")
+        self.bt_entry.insert(0, "50")
+
+        self.button_ok = ttk.Button(self.button_frame, text='Save')
+        self.button_reset = ttk.Button(self.button_frame, text='Reset')
+        self.button_ok.grid(row=3, column=3, columnspan=2)
+        self.button_reset.grid(row=3, column=5, columnspan=2)
+
+        self.blank_label = ttk.Label(self.blank_frame, text="")
+        self.blank_label.grid(row=0, column=0)
+
+        self.photo = tk.PhotoImage(file="./res/img/ninja.png")
+        self.image_label = tk.Label(self.image_frame, image=self.photo)
+        self.image_label.grid(row=0, column=6, pady=10, padx=10)
+
+        self.settings_frame.grid(row=1, column=1)
+        self.blank_frame.grid(row=2, column=1)
+        self.button_frame.grid(row=3, column=1)
+        self.image_frame.grid(row=0, column=3, rowspan=3, columnspan=3)
 
 
 class HelpPage(tk.Frame):
@@ -135,7 +145,8 @@ class KmfPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.label = tk.Message(self,
-                                text="This bell is here so that you don't have to sit high and dry.\n")
+                                text="This bell is here so that you don't have to sit high and dry.\n",
+                                font="helvetica 16 bold")
         self.label.grid(row=0, column=1, pady=10, padx=10)
 
         self.photo = tk.PhotoImage(file="./res/img/bell.png")
@@ -148,7 +159,7 @@ class MainPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         text_frame = tk.Frame(self, bd=0, relief="groove")
         time_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        button_frame = tk.Frame(self, bd=0, relief="sunken", bg="white")
+        button_frame = tk.Frame(self, bd=0, relief="sunken", bg="black")
         image_frame = tk.Frame(self, bd=0, relief="groove")
 
         text_frame.grid(row=1, column=0, sticky="ew")
@@ -236,10 +247,10 @@ class MainPage(tk.Frame):
 
         self.timeOn_display_label.set(str(diff)[:-3])
 
-        timeLeft = time_left(diff)
+        timeLeft = self.time_left(diff)
         self.timeLeft_display_label.set(str(timeLeft)[:-3])
 
-        self.goHome_display_label.set(go_home(time1))
+        self.goHome_display_label.set(self.go_home(time1))
 
         if timeLeft >= timedelta(0):
             self.timeLeft_display_label.set(str(timeLeft)[:-3])
@@ -249,6 +260,16 @@ class MainPage(tk.Frame):
             extraTime = (diff - timedelta(hours=8, minutes=50))
             self.timeLeft_display_label.set(str(extraTime)[:-3])
             self.timeLeft_display_text.set("Overtime earned")
+
+    def go_home(self, start):
+        self.start = start
+        time = start + timedelta(hours=8, minutes=50)
+        goHome_time = datetime.strftime(time, '%H:%M')
+        return goHome_time
+
+    def time_left(self, difference):
+        self.difference = difference
+        return timedelta(hours=8, minutes=50) - difference
 
 
 class LunchPage(tk.Frame):
@@ -329,7 +350,7 @@ class LunchPage(tk.Frame):
 
     def lunch_ti(self, event=None):
         time_now = datetime.now().strftime('%H:%M')
-        
+
         if self.startTime_Entry.get() != "":
             time1 = datetime.strptime(self.startTime_Entry.get(), '%H:%M')
         else:
@@ -352,19 +373,29 @@ class LunchPage(tk.Frame):
         # this just makes the start time be whatever the break time was later
         # ie if the break was 1:00 and start time was 8:00, it uses 9:00 as the start
         # need to calculate the difference between the normal lunch and the extended lunch
-        self.goHome_display_label.set(go_home(time1 + diff))
+        self.goHome_display_label.set(self.lunch_go_home(time1, diff))
+
+    def lunch_go_home(self, start, diff):
+        self.start = start
+        self.diff = diff
+        self.working_lgth = 8  # hours
+        self.break_lgth = 50  # minutes
+        self.break_sec = timedelta(minutes=self.break_lgth).seconds
+        if self.break_sec < diff.seconds:
+            time = self.start + timedelta(hours=self.working_lgth, seconds=diff.seconds)
+        else:
+            time = self.start + timedelta(hours=self.working_lgth, minutes=self.break_lgth)
+        goHome_time = datetime.strftime(time, '%H:%M')
+        return goHome_time
 
 
-def go_home(start):
-    time = start + timedelta(hours=8, minutes=50)
-    goHome_time = datetime.strftime(time, '%H:%M')
-    return goHome_time
-
-
-def time_left(difference):
-    return timedelta(hours=8, minutes=50) - difference
 
 
 if __name__ == "__main__":
+   # filename = "./res/config/settings.ini"
+   # settings = ConfigParser(filename)
+
+
+
     app = TimeInspector()
     app.mainloop()
