@@ -12,7 +12,8 @@ class TimeInspector(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
+        # this causes problems with some systems (OSX, ... )
+        #tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
         tk.Tk.wm_title(self, "TimeInspector 2.0")
         tk.Tk.geometry(self, '380x165')
         tk.Tk.resizable(self, width=False, height=False)
