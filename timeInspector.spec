@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['timeInspector.py'],
-             pathex=['Y:\\git\\scratch\\scripts\\TimeInspector'],
+             pathex=['/Users/lance/github/timeInspector'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -13,17 +13,28 @@ a = Analysis(['timeInspector.py'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher)
+             cipher=block_cipher,
+             noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
+          [],
+          exclude_binaries=True,
           name='timeInspector',
           debug=False,
+          bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          runtime_tmpdir=None,
-          console=False , icon='Clock4.ico')
+          console=False )
+coll = COLLECT(exe,Tree('/Users/lance/github/timeInspector/res/'),
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=None,
+               upx=True,
+               name='timeInspector')
+app = BUNDLE(coll,
+             name='timeInspector.app',
+             bundle_identifier=None,
+             icon='./res/img/clock-icon.icns')
