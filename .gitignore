@@ -2,3 +2,6 @@
 iMedic.py
 Thumbs.db
 .DS_Store
+build
+dist
+__pycache__
