@@ -1,11 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
+from sys import exit
+import sys
+import os
 from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
 from configparser import ConfigParser
 
+def quit():
+    exit(1)
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+        
 
 class TimeInspector(tk.Tk):
 
@@ -13,7 +29,7 @@ class TimeInspector(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # this causes problems with some systems (OSX, ... )
-        #tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
+        tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
         tk.Tk.wm_title(self, "TimeInspector 2.0")
         tk.Tk.geometry(self, '380x165')
         tk.Tk.resizable(self, width=False, height=False)
@@ -53,6 +69,7 @@ class TimeInspector(tk.Tk):
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
+    
 
 
 class SettingsPage(tk.Frame):
@@ -85,7 +102,7 @@ class SettingsPage(tk.Frame):
         self.working_hours_label.grid(row=1, column=3)
         self.break_min_label.grid(row=2, column=3)
 
-        self.wt_entry.insert(0, "8")
+        self.wt_entry.insert(0, "7")
         self.bt_entry.insert(0, "50")
 
         self.button_ok = ttk.Button(self.button_frame, text='Save')
@@ -258,19 +275,19 @@ class MainPage(tk.Frame):
             self.timeLeft_display_text.set("Time left until clocking out")
 
         else:
-            extraTime = (diff - timedelta(hours=8, minutes=50))
+            extraTime = (diff - timedelta(hours=7, minutes=50))
             self.timeLeft_display_label.set(str(extraTime)[:-3])
             self.timeLeft_display_text.set("Overtime earned")
 
     def go_home(self, start):
         self.start = start
-        time = start + timedelta(hours=8, minutes=50)
+        time = start + timedelta(hours=7, minutes=50)
         goHome_time = datetime.strftime(time, '%H:%M')
         return goHome_time
 
     def time_left(self, difference):
         self.difference = difference
-        return timedelta(hours=8, minutes=50) - difference
+        return timedelta(hours=7, minutes=50) - difference
 
 
 class LunchPage(tk.Frame):
@@ -379,7 +396,7 @@ class LunchPage(tk.Frame):
     def lunch_go_home(self, start, diff):
         self.start = start
         self.diff = diff
-        self.working_lgth = 8  # hours
+        self.working_lgth = 7  # hours
         self.break_lgth = 50  # minutes
         self.break_sec = timedelta(minutes=self.break_lgth).seconds
         if self.break_sec < diff.seconds:
