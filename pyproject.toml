@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "timeinspector"
+version = "0.1.0"
+description = "A  time calculator using PyQt"
+authors = ["lcwyo <lancechat@yahoo.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+pyqt5 = "^5.15"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.1"
+pyright = "^1.1.391"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+exclude = ["venv", ".venv"]
+# Add specific rule settings as needed
+
+
