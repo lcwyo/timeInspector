@@ -26,6 +26,34 @@ def calculate_go_home_time(start_time: datetime, hours: int = 8, minutes: int = 
     return end_time.strftime('%H:%M')
 
 
+from datetime import datetime, timedelta
+
+def calculate_time_worked_before_lunch(start_time: datetime, lunch_start: datetime) -> timedelta:
+    """Calculates the time worked before the lunch break."""
+    if lunch_start <= start_time:
+        raise ValueError("Lunch start time must be after start time.")
+    return lunch_start - start_time
+
+def calculate_remaining_working_hours(time_worked_before_lunch: timedelta, lunch_duration: timedelta) -> timedelta:
+    """Calculates the remaining working hours after the lunch break."""
+    required_work_time = timedelta(hours=8, minutes=00)  # Fixed required working time
+    
+    # Subtract the time worked before lunch and lunch duration from the required work time
+    remaining_work_time = required_work_time - time_worked_before_lunch
+
+    # Ensure the remaining work time is not negative
+    if remaining_work_time < timedelta(0):
+        raise ValueError("Invalid lunch duration. Remaining work time cannot be negative.")
+    
+    return remaining_work_time
+
+def calculate_go_home_time_with_lunch(remaining_work_time: timedelta, lunch_end: datetime) -> str:
+    """Calculates the time to go home after accounting for the lunch break."""
+    go_home_time = lunch_end + remaining_work_time
+    return go_home_time.strftime('%H:%M')
+
+
+
 def get_default_time() -> str:
     """Returns the default time in the format '8:00'."""
     return "8:00"
