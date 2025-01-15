@@ -5,3 +5,5 @@ from .HelpPage import HelpPage
 from .AboutPage import AboutPage
 from .KmfPage import KmfPage
 from .LunchPage import LunchPage
+from .WFHPage import WFHPage
+from .BasePage import BasePage

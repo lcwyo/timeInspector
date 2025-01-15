@@ -1,15 +1,19 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, QLineEdit, QPushButton
-from PyQt5.QtWidgets import QMessageBox
-import sys
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, QLineEdit, QPushButton, QMessageBox
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
 from datetime import datetime, timedelta
-from utils import parse_time, calculate_time_difference, calculate_go_home_time, get_time_left, get_image_path, validate_time_input, get_current_time, get_default_time 
+import sys
+from utils import (
+    parse_time, calculate_time_difference, calculate_go_home_time, 
+    get_time_left, get_image_path, validate_time_input, 
+    get_current_time, get_default_time
+)
 
 
 class MainPage(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent  # Reference to the main application
         layout = QGridLayout()
 
         self.currentTime = QLabel('Current Time')
@@ -68,23 +72,23 @@ class MainPage(QWidget):
         self.currentTime_Display.setText(current_time)
 
     def callback(self):
+        """Handles calculations and updates the status bar."""
         # Get current time
         time_now = get_current_time()
         time2 = parse_time(time_now)
 
-        # Check if start time is empty or invalid, set default time if so
+        # Check if start time is empty or invalid
         if self.startTime_Entry.text() != "":
-            #time1 = parse_time(self.startTime_Entry.text())
             if not validate_time_input(self.startTime_Entry.text()):
                 self.show_error_message("Invalid start time entered!")
                 return
-            else:
-                time1 = parse_time(self.startTime_Entry.text())
+            time1 = parse_time(self.startTime_Entry.text())
         else:
-            self.startTime_Entry.setText(get_default_time())  # Set the default time (08:00)
-            time1 = parse_time(get_default_time())  # Default to "08:00"
+            default_time = get_default_time()
+            self.startTime_Entry.setText(default_time)
+            time1 = parse_time(default_time)
 
-        # Ensure time1 is valid (not None) before continuing
+        # Ensure time1 is valid (not None)
         if time1 is None:
             self.show_error_message("Invalid start time entered!")
             return
@@ -95,31 +99,24 @@ class MainPage(QWidget):
 
         # Calculate the time left until clocking out (timedelta)
         time_left = get_time_left(diff)
-        self.timeLeft_display_label.setText(str(time_left)[:-3])
 
-        # Calculate when the user can go home
-        self.goHome_display_label.setText(calculate_go_home_time(time1))  # Use the updated function
-
-        # Update labels based on whether time left is positive or negative
+        # Update labels for time left or overtime
         if time_left >= timedelta(0):
             self.timeLeft_display_label.setText(str(time_left)[:-3])
             self.timeLeft_display_text.setText("Time left until clocking out")
         else:
-            extra_time = (diff - timedelta(hours=7, minutes=50))
+            extra_time = diff - timedelta(hours=7, minutes=50)
             self.timeLeft_display_label.setText(str(extra_time)[:-3])
             self.timeLeft_display_text.setText("Overtime earned")
 
+        # Calculate when the user can go home
+        go_home_time = calculate_go_home_time(time1)
+        self.goHome_display_label.setText(go_home_time)
 
-
-
-
-    def go_home(self, start_time):
-        """Calculate and return the 'go home' time."""
-        go_home_time = calculate_go_home_time(start_time)
-        return go_home_time
-
-
-
+        # Update status bar with results
+        self.parent.update_status_bar(
+            f"Go Home Time: {go_home_time} | Time Left: {self.timeLeft_display_label.text()}"
+        )
 
     def show_error_message(self, message: str):
         msg = QMessageBox()

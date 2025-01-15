@@ -1,79 +1,83 @@
 import sys
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QMainWindow, QStackedWidget
+import logging
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QStatusBar, QAction
 
-from pages import (
-    MainPage,
-    SettingsPage, 
-    HelpPage, 
-    AboutPage, 
-    KmfPage, 
-    LunchPage 
-)  # Importing from the pages module
+from pages import MainPage, SettingsPage, HelpPage, AboutPage, KmfPage, LunchPage, WFHPage
+
+logging.basicConfig(level=logging.ERROR)
 
 class TimeInspector(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("TimeInspector 2.0")
-        self.setGeometry(100, 100, 380, 165)
-        self.setFixedSize(380, 165)
+        self.setGeometry(100, 100, 600, 400)  # Adjusted size to accommodate tabs
+        self.setMinimumSize(600, 400)
 
-        self.menu = self.menuBar()
+        self._createMenuBar()
+        self._createStatusBar()
 
-       # File Menu
-        filemenu = self.menu.addMenu('File')
+        # Create a QTabWidget to hold the pages
+        self.tabs = QTabWidget(self)
+        self.setCentralWidget(self.tabs)
 
-        # Adding menu actions
-        filemenu.addAction('Settings', lambda: self.show_frame('Settings'))
-        filemenu.addAction('Time Inspector 2.0', lambda: self.show_frame('Main'))
-        filemenu.addAction('Lunch Inspector', lambda: self.show_frame('Lunch'))
-
-        # Add separator between actions
-        filemenu.addSeparator()
-
-        # Exit action with proper exit handling
-        exit_action = filemenu.addAction('Exit')
-        exit_action.triggered.connect(self.close)  # Connect to the close method to exit the app
-
-        # Add additional menus for other pages if needed (example)
-        othermenu = self.menu.addMenu('Other')
-        othermenu.addAction('A Page', lambda: self.show_frame('About'))  # Action for Kmf page
-
-
-        # Help Menu
-        helpmenu = self.menu.addMenu('Help')
-        helpmenu.addAction('Help', lambda: self.show_frame('Help'))  # Corrected to 'Help'
-        helpmenu.addAction('About', lambda: self.show_frame('About'))  # Corrected to 'About'
-
-        
-
-        self.container = QStackedWidget()
-        self.setCentralWidget(self.container)
-
-        # Ensure all pages are correctly added to frames dictionary
+        # Define pages to be added to the tabs
         self.frames = {
             'Main': MainPage(self),
-            'Settings': SettingsPage(self),
-            'Help': HelpPage(self),
-            'About': AboutPage(self),
-            'Kmf': KmfPage(self),
             'Lunch': LunchPage(self),
+            'WFH': WFHPage(self),  # New WFHPage added
         }
 
-        for page in self.frames.values():
-            self.container.addWidget(page)
+        # Add pages to the tab widget
+        for tab_name, page in self.frames.items():
+            self.tabs.addTab(page, tab_name)
 
-        # Default page is MainPage
-        self.show_frame('Main')  
+        # Add additional pages like Settings, Help, About if needed
+        self.settings_page = SettingsPage(self)
+        self.help_page = HelpPage(self)
+        self.about_page = AboutPage(self)
+        self.kmf_page = KmfPage(self)
+
+    def _createMenuBar(self):
+        self.menuBar = self.menuBar()
+        self.menuBar.setNativeMenuBar(False)
+
+        # Inspector Menu (no longer needed, as pages are now tabs)
+        inspectorMenu = self.menuBar.addMenu('Inspector')
+        inspectorMenu.addAction('Time Inspector', lambda: self.tabs.setCurrentIndex(0))
+        inspectorMenu.addAction('Lunch Inspector', lambda: self.tabs.setCurrentIndex(1))
+        inspectorMenu.addAction('WFH Inspector', lambda: self.tabs.setCurrentIndex(2))
+
+        # Settings Menu
+        settingsMenu = self.menuBar.addMenu('Settings')
+        settingsMenu.addAction('Settings', lambda: self.show_frame('Settings'))
+        settingsMenu.addSeparator()
+        exitAction = settingsMenu.addAction('Exit')
+        exitAction.triggered.connect(QApplication.instance().quit)
+
+        # Help Menu
+        helpMenu = self.menuBar.addMenu('?')
+        helpMenu.addAction('About', lambda: self.show_frame('About'))
+        helpMenu.addAction('Help', lambda: self.show_frame('Help'))
+
+    def _createStatusBar(self):
+        self.statusbar = self.statusBar()
+        self.statusbar.showMessage("Ready", 3000)
+
+    def update_status_bar(self, message):
+        """Update the status bar with a given message."""
+        self.statusbar.showMessage(message, 3000)
 
     def show_frame(self, page_name):
-        """Show the page corresponding to the given page name"""
-        if page_name in self.frames:
-            page = self.frames[page_name]
-            self.container.setCurrentWidget(page)
+        """Show the page corresponding to the given page name."""
+        if page_name == 'Settings':
+            self.settings_page.show()
+        elif page_name == 'About':
+            self.about_page.show()
+        elif page_name == 'Help':
+            self.help_page.show()
         else:
-            print(f"Error: {page_name} not found in frames!")
+            logging.error(f"Page {page_name} not found!")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
