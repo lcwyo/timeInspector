@@ -5,8 +5,11 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QPushButton,
     QGridLayout,
+    QSpacerItem,
+    QSizePolicy,
     QApplication,
 )
+from PyQt5.QtCore import QTimer, Qt 
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
 from datetime import datetime
@@ -22,6 +25,11 @@ class WFHPage(QWidget):
 
     def init_ui(self):
         layout = QGridLayout()
+
+        # Set spacing and margins for a cleaner layout
+        layout.setHorizontalSpacing(10)
+        layout.setVerticalSpacing(10)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         # Current Time Display
         self.current_time_label = QLabel("Current Time")
@@ -50,11 +58,17 @@ class WFHPage(QWidget):
         layout.addWidget(self.ok_button, 3, 0)
         layout.addWidget(self.button_close, 3, 1)
 
+        # Image
         self.photo = QLabel()
         ninja = get_image_path("ninja.png")
         pixmap = QPixmap(ninja)
         self.photo.setPixmap(pixmap)
-        layout.addWidget(self.photo, 0, 2, 3, 1)
+        self.photo.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.photo, 0, 2, 3, 1)  # Span image across 3 rows
+
+        # Add Spacer for better spacing between widgets
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        layout.addItem(spacer, 4, 0, 1, 2)
 
         # Set Layout
         self.setLayout(layout)
