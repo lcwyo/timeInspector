@@ -1,419 +1,350 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import time
-from sys import exit
 import sys
-import os
+import time
 from datetime import datetime, timedelta
-import tkinter as tk
-from tkinter import ttk
-from configparser import ConfigParser
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QAction, QLabel, QFrame, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QStackedWidget, QWidget, QMenuBar, QGridLayout
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtCore import QTimer
 
-def quit():
-    exit(1)
+class TimeInspector(QMainWindow):
 
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
+    def __init__(self):
+        super().__init__()
 
-    return os.path.join(base_path, relative_path)
-        
+        self.setWindowTitle("TimeInspector 2.0")
+        self.setGeometry(100, 100, 380, 165)
+        self.setFixedSize(380, 165)
 
-class TimeInspector(tk.Tk):
+        self.menu = self.menuBar()
 
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        filemenu = self.menu.addMenu('File')
+        filemenu.addAction('Settings', lambda: self.show_frame(SettingsPage))
+        filemenu.addAction('Time Inspector 2.0', lambda: self.show_frame(MainPage))
+        filemenu.addAction('Lunch Inspector', lambda: self.show_frame(LunchPage))
+        filemenu.addSeparator()
+        filemenu.addAction('Exit', sys.exit)
 
-        # this causes problems with some systems (OSX, ... )
-        tk.Tk.iconbitmap(self, default="./res/img/logo.ico")
-        tk.Tk.wm_title(self, "TimeInspector 2.0")
-        tk.Tk.geometry(self, '380x165')
-        tk.Tk.resizable(self, width=False, height=False)
+        helpmenu = self.menu.addMenu('Help')
+        helpmenu.addAction('Help', lambda: self.show_frame(HelpPage))
+        helpmenu.addAction('About', lambda: self.show_frame(AboutPage))
 
-        self.option_add("*Font", "Garamound")
-        self.menu = tk.Menu(self)
-
-        self.config(menu=self.menu)
-
-        filemenu = tk.Menu(self.menu)
-        filemenu.add_command(label='Settings', command=lambda: self.show_frame(SettingsPage))
-        filemenu.add_command(label='Time Inspector 2.0', command=lambda: self.show_frame(MainPage))
-        filemenu.add_command(label='Lunch Inspector', command=lambda: self.show_frame(LunchPage))
-        filemenu.add_separator()
-        filemenu.add_command(label='Exit', command=quit)
-        self.menu.add_cascade(label='File', menu=filemenu)
-
-        about = tk.Menu(self.menu)
-        about.add_cascade(label='Help', command=lambda: self.show_frame(HelpPage))
-        about.add_command(label='About', command=lambda: self.show_frame(AboutPage))
-        self.menu.add_cascade(label='Help', menu=about)
-
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.columnconfigure(0, weight=1)
+        self.container = QStackedWidget()
+        self.setCentralWidget(self.container)
 
         self.frames = {}
-
         for F in (AboutPage, MainPage, HelpPage, KmfPage, SettingsPage, LunchPage):
-            frame = F(container, self)
+            frame = F(self)
             self.frames[F] = frame
-            frame.grid(row=0, column=1, sticky="nsew")
+            self.container.addWidget(frame)
 
         self.show_frame(MainPage)
 
     def show_frame(self, cont):
         frame = self.frames[cont]
-        frame.tkraise()
-    
+        self.container.setCurrentWidget(frame)
 
 
-class SettingsPage(tk.Frame):
+class SettingsPage(QWidget):
 
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.settings_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        self.blank_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        self.button_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        self.image_frame = tk.Frame(self, bd=0, relief="groove")
+    def __init__(self, parent):
+        super().__init__(parent)
 
-        self.label = tk.Label(self, text="Time Inspector Settings", font="Comic 14")
-        self.label.grid(row=0, column=0, columnspan=3)
+        layout = QGridLayout()
 
-        self.working_label = ttk.Label(self.settings_frame, text="Working time ")
-        self.break_label = ttk.Label(self.settings_frame, text="Break time ")
+        self.label = QLabel("Time Inspector Settings")
+        self.label.setStyleSheet("font-size: 14px; font-family: Comic Sans MS;")
+        layout.addWidget(self.label, 0, 0, 1, 3)
 
-        self.wt_entry = ttk.Entry(self.settings_frame, width=3)
-        self.bt_entry = ttk.Entry(self.settings_frame, width=3)
+        self.working_label = QLabel("Working time ")
+        self.break_label = QLabel("Break time ")
 
-        self.working_hours_label = ttk.Label(self.settings_frame, text=" (hours)")
-        self.break_min_label = ttk.Label(self.settings_frame, text=" (min)")
+        self.wt_entry = QLineEdit()
+        self.wt_entry.setFixedWidth(30)
+        self.bt_entry = QLineEdit()
+        self.bt_entry.setFixedWidth(30)
 
-        self.working_label.grid(row=1, column=0)
-        self.wt_entry.grid(row=1, column=2)
+        self.working_hours_label = QLabel(" (hours)")
+        self.break_min_label = QLabel(" (min)")
 
-        self.break_label.grid(row=2, column=0)
-        self.bt_entry.grid(row=2, column=2)
+        layout.addWidget(self.working_label, 1, 0)
+        layout.addWidget(self.wt_entry, 1, 1)
+        layout.addWidget(self.working_hours_label, 1, 2)
 
-        self.working_hours_label.grid(row=1, column=3)
-        self.break_min_label.grid(row=2, column=3)
+        layout.addWidget(self.break_label, 2, 0)
+        layout.addWidget(self.bt_entry, 2, 1)
+        layout.addWidget(self.break_min_label, 2, 2)
 
-        self.wt_entry.insert(0, "7")
-        self.bt_entry.insert(0, "50")
+        self.wt_entry.setText("8")
+        self.bt_entry.setText("50")
 
-        self.button_ok = ttk.Button(self.button_frame, text='Save')
-        self.button_reset = ttk.Button(self.button_frame, text='Reset')
-        self.button_ok.grid(row=3, column=3, columnspan=2)
-        self.button_reset.grid(row=3, column=5, columnspan=2)
+        self.button_ok = QPushButton('Save')
+        self.button_reset = QPushButton('Reset')
+        layout.addWidget(self.button_ok, 3, 1)
+        layout.addWidget(self.button_reset, 3, 2)
 
-        self.blank_label = ttk.Label(self.blank_frame, text="")
-        self.blank_label.grid(row=0, column=0)
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/ninja.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo, 0, 3, 3, 1)
 
-        self.photo = tk.PhotoImage(file="./res/img/ninja.png")
-        self.image_label = tk.Label(self.image_frame, image=self.photo)
-        self.image_label.grid(row=0, column=6, pady=10, padx=10)
-
-        self.settings_frame.grid(row=1, column=1)
-        self.blank_frame.grid(row=2, column=1)
-        self.button_frame.grid(row=3, column=1)
-        self.image_frame.grid(row=0, column=3, rowspan=3, columnspan=3)
+        self.setLayout(layout)
 
 
-class HelpPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent, bg='white')
-        self.message = tk.Message(self,
-                                  text='Enter the time you clocked in the "start time" box & click ok.\
-                                  \nTimeInspector will calculate the time you have left before you can clock out.\
-                                  \nIf you have overtime, it will display the overtime earned'
-                                  ,
-                                  justify="left",
-                                  bg='white',
-                                  width=175)
-        self.message.config(font=('Times', 8))
-        self.message.grid(row=0, column=1, pady=10, padx=10)
+class HelpPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QVBoxLayout()
 
-        self.photo = tk.PhotoImage(file="./res/img/kmf.png")
-        self.button = tk.Button(self, image=self.photo,
-                                relief='flat',
-                                bg='white',
-                                highlightthickness=0,
-                                command=lambda: controller.show_frame(KmfPage))
+        self.message = QLabel('Enter the time you clocked in the "start time" box & click ok.\n'
+                              'TimeInspector will calculate the time you have left before you can clock out.\n'
+                              'If you have overtime, it will display the overtime earned')
+        self.message.setStyleSheet("font-size: 8px; font-family: Comic Sans MS;")
+        layout.addWidget(self.message)
 
-        self.button.grid(row=0, column=0, rowspan=2)
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/kmf.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo)
 
+        self.button = QPushButton()
+        self.button.setIcon(QIcon(pixmap))
+        self.button.setFlat(True)
+        self.button.clicked.connect(lambda: parent.show_frame(KmfPage))
+        layout.addWidget(self.button)
 
-class AboutPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.label = tk.Message(self,
-                                text="Time Inspector was made so that I wouldn't be late going home.\n\n© 2017 Lance Chatwell")
-        self.label.grid(row=0, column=1, pady=10, padx=10)
-
-        self.photo = tk.PhotoImage(file="./res/img/ninja.png")
-        self.image_label = tk.Label(self, image=self.photo)
-        self.image_label.grid(row=0, column=0, pady=10, padx=10)
+        self.setLayout(layout)
 
 
-class KmfPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.label = tk.Message(self,
-                                text="This bell is here so that you don't have to sit high and dry.\n",
-                                font="helvetica 16 bold")
-        self.label.grid(row=0, column=1, pady=10, padx=10)
+class AboutPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QVBoxLayout()
 
-        self.photo = tk.PhotoImage(file="./res/img/bell.png")
-        self.image_label = tk.Label(self, image=self.photo)
-        self.image_label.grid(row=0, column=0, pady=10, padx=10)
+        self.label = QLabel("Time Inspector was made so that I wouldn't be late going home.\n\n© 2017 Lance Chatwell")
+        layout.addWidget(self.label)
+
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/ninja.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo)
+
+        self.setLayout(layout)
 
 
-class MainPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        text_frame = tk.Frame(self, bd=0, relief="groove")
-        time_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        button_frame = tk.Frame(self, bd=0, relief="sunken", bg="black")
-        image_frame = tk.Frame(self, bd=0, relief="groove")
+class KmfPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QVBoxLayout()
 
-        text_frame.grid(row=1, column=0, sticky="ew")
-        time_frame.grid(row=1, column=1, sticky="ew")
-        button_frame.grid(row=6, column=0, columnspan=6, padx=2)
-        image_frame.grid(row=0, column=3, rowspan=6, sticky="ew")
+        self.label = QLabel("This bell is here so that you don't have to sit high and dry.\n")
+        self.label.setStyleSheet("font-size: 16px; font-family: Helvetica; font-weight: bold;")
+        layout.addWidget(self.label)
 
-        self.currentTime = tk.Label(text_frame, text='Current Time')
-        self.currentTime_Display = tk.Label(time_frame)
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/bell.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo)
 
-        startTime_text = tk.Label(text_frame, text='Start Time')
-        self.startTime_Entry = tk.Entry(time_frame, width=5)
+        self.setLayout(layout)
 
-        self.timeOn_display_label = tk.StringVar()
-        timeOn_text = tk.Label(text_frame, text='Time on the clock')
-        timeOn_display = tk.Label(time_frame, textvariable=self.timeOn_display_label)
 
-        self.timeLeft_display_label = tk.StringVar()
-        self.timeLeft_display_text = tk.StringVar()
+class MainPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QGridLayout()
 
-        timeLeft_text = tk.Label(text_frame, textvariable=self.timeLeft_display_text)
-        self.timeLeft_display_text.set('Time left until clocking out')
-        timeLeft_display = tk.Label(time_frame, textvariable=self.timeLeft_display_label)
+        self.currentTime = QLabel('Current Time')
+        self.currentTime_Display = QLabel()
 
-        self.goHome_display_label = tk.StringVar()
-        goHome_text = tk.Label(text_frame, text='You can leave the building at')
-        goHome_display = tk.Label(time_frame, textvariable=self.goHome_display_label)
+        startTime_text = QLabel('Start Time')
+        self.startTime_Entry = QLineEdit()
+        self.startTime_Entry.setFixedWidth(50)
 
-        button_ok = ttk.Button(button_frame, text="OK", command=self.callback)
-        button_close = ttk.Button(button_frame, text="Close", command=quit)
+        self.timeOn_display_label = QLabel()
+        timeOn_text = QLabel('Time on the clock')
 
-        self.bind('<Return>', self.callback)
+        self.timeLeft_display_label = QLabel()
+        self.timeLeft_display_text = QLabel('Time left until clocking out')
 
-        self.currentTime.grid(row=0, column=0, sticky='nw')
-        self.currentTime_Display.grid(row=0, column=1, sticky='nw')
+        self.goHome_display_label = QLabel()
+        goHome_text = QLabel('You can leave the building at')
 
-        startTime_text.grid(row=1, column=0, sticky='nw')
-        self.startTime_Entry.grid(row=1, column=1, sticky='nw')
+        button_ok = QPushButton("OK")
+        button_ok.clicked.connect(self.callback)
+        button_close = QPushButton("Close")
+        button_close.clicked.connect(sys.exit)
 
-        timeOn_text.grid(row=2, column=0, sticky='nw')
-        timeOn_display.grid(row=2, column=1, sticky='nw')
+        layout.addWidget(self.currentTime, 0, 0)
+        layout.addWidget(self.currentTime_Display, 0, 1)
 
-        timeLeft_text.grid(row=3, column=0, sticky='nw')
-        timeLeft_display.grid(row=3, column=1, sticky='nw')
+        layout.addWidget(startTime_text, 1, 0)
+        layout.addWidget(self.startTime_Entry, 1, 1)
 
-        goHome_text.grid(row=4, column=0, sticky='nw')
-        goHome_display.grid(row=4, column=1, sticky='nw')
+        layout.addWidget(timeOn_text, 2, 0)
+        layout.addWidget(self.timeOn_display_label, 2, 1)
 
-        button_ok.grid(row=1, column=0, sticky='nw')
-        button_close.grid(row=1, column=1, sticky='nw')
-        self.tick()
+        layout.addWidget(self.timeLeft_display_text, 3, 0)
+        layout.addWidget(self.timeLeft_display_label, 3, 1)
 
-        if tk.TkVersion >= 8.6:
-            self.extension = 'png'
-        else:
-            self.extension = 'ppm'
+        layout.addWidget(goHome_text, 4, 0)
+        layout.addWidget(self.goHome_display_label, 4, 1)
 
-        self.photo = tk.PhotoImage(file="./res/img/inspector." + self.extension)
-        self.image_label = tk.Label(image_frame, image=self.photo)
-        self.image_label.pack(side='top')
+        layout.addWidget(button_ok, 5, 0)
+        layout.addWidget(button_close, 5, 1)
 
-    def tick(self, time1=''):
-        self.time1 = time1
-        # get the current local time from the PC
-        self.time2 = time.strftime('%H:%M')
-        # if time string has changed, update it
-        if self.time2 != self.time1:
-            self.time1 = self.time2
-            self.currentTime_Display.config(text=self.time2)
-        # calls itself every 200 milliseconds
-        # to update the time display as needed
-        self.currentTime_Display.after(200, self.tick)
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/inspector.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo, 0, 2, 6, 1)
 
-    def callback(self, event=None):
+        self.setLayout(layout)
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.tick)
+        self.timer.start(200)
+
+    def tick(self):
+        current_time = time.strftime('%H:%M')
+        self.currentTime_Display.setText(current_time)
+
+    def callback(self):
         time_now = datetime.now().strftime('%H:%M')
         time2 = datetime.strptime(time_now, '%H:%M')
 
-        if self.startTime_Entry.get() != "":
-            time1 = datetime.strptime(self.startTime_Entry.get(), '%H:%M')
+        if self.startTime_Entry.text() != "":
+            time1 = datetime.strptime(self.startTime_Entry.text(), '%H:%M')
         else:
             time1 = datetime.strptime("8:00", '%H:%M')
-            self.startTime_Entry.insert(0, "08:00")
+            self.startTime_Entry.setText("08:00")
 
         diff = time2 - time1
 
-        self.timeOn_display_label.set(str(diff)[:-3])
+        self.timeOn_display_label.setText(str(diff)[:-3])
 
         timeLeft = self.time_left(diff)
-        self.timeLeft_display_label.set(str(timeLeft)[:-3])
+        self.timeLeft_display_label.setText(str(timeLeft)[:-3])
 
-        self.goHome_display_label.set(self.go_home(time1))
+        self.goHome_display_label.setText(self.go_home(time1))
 
         if timeLeft >= timedelta(0):
-            self.timeLeft_display_label.set(str(timeLeft)[:-3])
-            self.timeLeft_display_text.set("Time left until clocking out")
-
+            self.timeLeft_display_label.setText(str(timeLeft)[:-3])
+            self.timeLeft_display_text.setText("Time left until clocking out")
         else:
-            extraTime = (diff - timedelta(hours=7, minutes=50))
-            self.timeLeft_display_label.set(str(extraTime)[:-3])
-            self.timeLeft_display_text.set("Overtime earned")
+            extraTime = (diff - timedelta(hours=8, minutes=50))
+            self.timeLeft_display_label.setText(str(extraTime)[:-3])
+            self.timeLeft_display_text.setText("Overtime earned")
 
     def go_home(self, start):
-        self.start = start
-        time = start + timedelta(hours=7, minutes=50)
+        time = start + timedelta(hours=8, minutes=50)
         goHome_time = datetime.strftime(time, '%H:%M')
         return goHome_time
 
     def time_left(self, difference):
-        self.difference = difference
-        return timedelta(hours=7, minutes=50) - difference
+        return timedelta(hours=8, minutes=50) - difference
 
 
-class LunchPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        text_frame = tk.Frame(self, bd=0, relief="groove")
-        time_frame = tk.Frame(self, bd=0, relief="groove", padx=2)
-        button_frame = tk.Frame(self, bd=0, relief="sunken", bg="white")
-        image_frame = tk.Frame(self, bd=0, relief="groove")
+class LunchPage(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QGridLayout()
 
-        text_frame.grid(row=1, column=0, sticky="ew")
-        time_frame.grid(row=1, column=1, sticky="ew")
-        button_frame.grid(row=6, column=0, columnspan=6, padx=2)
-        image_frame.grid(row=0, column=3, rowspan=6, sticky="ew")
+        self.currentTime = QLabel('Current Time')
+        self.currentTime_Display = QLabel()
 
-        self.currentTime = tk.Label(text_frame, text='Current Time')
-        self.currentTime_Display = tk.Label(time_frame)
+        self.startTime_text = QLabel('Start Time')
+        self.startTime_Entry = QLineEdit()
+        self.startTime_Entry.setFixedWidth(50)
 
-        self.startTime_text = tk.Label(text_frame, text='Start Time')
-        self.startTime_Entry = tk.Entry(time_frame, width=5)
+        self.start_lunch_time_display_label = QLabel()
+        self.start_lunch_time_text = QLabel('Start Lunch Time')
+        self.start_lunch_entry = QLineEdit()
+        self.start_lunch_entry.setFixedWidth(50)
 
-        self.start_lunch_time_display_label = tk.StringVar()
-        self.start_lunch_time_text = tk.Label(text_frame, text='Start Lunch Time')
-        self.start_lunch_entry = tk.Entry(time_frame, width=5)
+        self.end_lunch_time_display_label = QLabel()
+        self.end_lunch_time_text = QLabel('End Lunch Time')
+        self.end_lunch_entry = QLineEdit()
+        self.end_lunch_entry.setFixedWidth(50)
 
-        self.end_lunch_time_display_label = tk.StringVar()
-        self.end_lunch_time_text = tk.Label(text_frame, text='End Lunch Time')
-        self.end_lunch_entry = tk.Entry(time_frame, width=5)
+        self.goHome_display_label = QLabel()
+        self.goHome_text = QLabel('You can leave the building at')
 
-        self.goHome_display_label = tk.StringVar()
-        self.goHome_text = tk.Label(text_frame, text='You can leave the building at')
-        self.goHome_display = tk.Label(time_frame, textvariable=self.goHome_display_label)
+        button_ok = QPushButton("OK")
+        button_ok.clicked.connect(self.lunch_ti)
+        button_close = QPushButton("Close")
+        button_close.clicked.connect(sys.exit)
 
-        button_ok = ttk.Button(button_frame, text="OK", command=self.lunch_ti)
-        button_close = ttk.Button(button_frame, text="Close", command=quit)
+        layout.addWidget(self.currentTime, 0, 0)
+        layout.addWidget(self.currentTime_Display, 0, 1)
 
-        self.bind('<Return>', self.lunch_ti)
+        layout.addWidget(self.startTime_text, 1, 0)
+        layout.addWidget(self.startTime_Entry, 1, 1)
 
-        self.currentTime.grid(row=0, column=0, sticky='nw')
-        self.currentTime_Display.grid(row=0, column=1, sticky='nw')
+        layout.addWidget(self.start_lunch_time_text, 2, 0)
+        layout.addWidget(self.start_lunch_entry, 2, 1)
 
-        self.startTime_text.grid(row=1, column=0, sticky='nw')
-        self.startTime_Entry.grid(row=1, column=1, sticky='nw')
+        layout.addWidget(self.end_lunch_time_text, 3, 0)
+        layout.addWidget(self.end_lunch_entry, 3, 1)
 
-        self.start_lunch_time_text.grid(row=2, column=0, sticky='nw')
-        self.start_lunch_entry.grid(row=2, column=1, sticky='nw')
+        layout.addWidget(self.goHome_text, 4, 0)
+        layout.addWidget(self.goHome_display_label, 4, 1)
 
-        self.end_lunch_time_text.grid(row=3, column=0, sticky='nw')
-        self.end_lunch_entry.grid(row=3, column=1, sticky='nw')
+        layout.addWidget(button_ok, 5, 0)
+        layout.addWidget(button_close, 5, 1)
 
-        self.goHome_text.grid(row=4, column=0, sticky='nw')
-        self.goHome_display.grid(row=4, column=1, sticky='nw')
+        self.photo = QLabel()
+        pixmap = QPixmap("./res/img/inspector.png")
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo, 0, 2, 6, 1)
 
-        button_ok.grid(row=1, column=0, sticky='nw')
-        button_close.grid(row=1, column=1, sticky='nw')
-        self.tick()
+        self.setLayout(layout)
 
-        if tk.TkVersion >= 8.6:
-            self.extension = 'png'
-        else:
-            self.extension = 'ppm'
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.tick)
+        self.timer.start(200)
 
-        self.photo = tk.PhotoImage(file="./res/img/inspector." + self.extension)
-        self.image_label = tk.Label(image_frame, image=self.photo)
-        self.image_label.pack(side='top')
+    def tick(self):
+        current_time = time.strftime('%H:%M')
+        self.currentTime_Display.setText(current_time)
 
-    def tick(self, time1=''):
-        self.time1 = time1
-        # get the current local time from the PC
-        self.time2 = time.strftime('%H:%M')
-        # if time string has changed, update it
-        if self.time2 != self.time1:
-            self.time1 = self.time2
-            self.currentTime_Display.config(text=self.time2)
-        # calls itself every 200 milliseconds
-        # to update the time display as needed
-        self.currentTime_Display.after(200, self.tick)
-
-    def lunch_ti(self, event=None):
+    def lunch_ti(self):
         time_now = datetime.now().strftime('%H:%M')
 
-        if self.startTime_Entry.get() != "":
-            time1 = datetime.strptime(self.startTime_Entry.get(), '%H:%M')
+        if self.startTime_Entry.text() != "":
+            time1 = datetime.strptime(self.startTime_Entry.text(), '%H:%M')
         else:
             time1 = datetime.strptime("8:00", '%H:%M')
-            self.startTime_Entry.insert(0, "08:00")
+            self.startTime_Entry.setText("08:00")
 
-        if self.start_lunch_entry.get() != "":
-            pTime1 = datetime.strptime(self.start_lunch_entry.get(), '%H:%M')
+        if self.start_lunch_entry.text() != "":
+            pTime1 = datetime.strptime(self.start_lunch_entry.text(), '%H:%M')
         else:
             pTime1 = datetime.strptime("12:00", '%H:%M')
-            self.start_lunch_entry.insert(0, "12:00")
+            self.start_lunch_entry.setText("12:00")
 
-        if self.end_lunch_entry.get() != "":
-            pTime2 = datetime.strptime(self.end_lunch_entry.get(), '%H:%M')
+        if self.end_lunch_entry.text() != "":
+            pTime2 = datetime.strptime(self.end_lunch_entry.text(), '%H:%M')
         else:
             pTime2 = datetime.strptime("13:00", '%H:%M')
-            self.end_lunch_entry.insert(0, "13:00")
+            self.end_lunch_entry.setText("13:00")
 
         diff = pTime2 - pTime1
-        # this just makes the start time be whatever the break time was later
-        # ie if the break was 1:00 and start time was 8:00, it uses 9:00 as the start
-        # need to calculate the difference between the normal lunch and the extended lunch
-        self.goHome_display_label.set(self.lunch_go_home(time1, diff))
+        self.goHome_display_label.setText(self.lunch_go_home(time1, diff))
 
     def lunch_go_home(self, start, diff):
-        self.start = start
-        self.diff = diff
-        self.working_lgth = 7  # hours
-        self.break_lgth = 50  # minutes
-        self.break_sec = timedelta(minutes=self.break_lgth).seconds
-        if self.break_sec < diff.seconds:
-            time = self.start + timedelta(hours=self.working_lgth, seconds=diff.seconds)
+        working_lgth = 7  # hours
+        break_lgth = 50  # minutes
+        break_sec = timedelta(minutes=break_lgth).seconds
+        if break_sec < diff.seconds:
+            time = start + timedelta(hours=working_lgth, seconds=diff.seconds)
         else:
-            time = self.start + timedelta(hours=self.working_lgth, minutes=self.break_lgth)
+            time = start + timedelta(hours=working_lgth, minutes=break_lgth)
         goHome_time = datetime.strftime(time, '%H:%M')
         return goHome_time
 
 
-
-
 if __name__ == "__main__":
-   # filename = "./res/config/settings.ini"
-   # settings = ConfigParser(filename)
-
-
-
-    app = TimeInspector()
-    app.mainloop()
+    app = QApplication(sys.argv)
+    mainWin = TimeInspector()
+    mainWin.show()
+    sys.exit(app.exec_())
