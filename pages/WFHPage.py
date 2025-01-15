@@ -4,11 +4,13 @@ from PyQt5.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
+    QGridLayout,
     QApplication,
 )
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QPixmap
 from datetime import datetime
-from utils.utils import parse_time, get_current_time
+from utils.utils import parse_time, get_current_time, get_image_path
 import sys
 
 
@@ -19,31 +21,40 @@ class WFHPage(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        layout = QVBoxLayout()
+        layout = QGridLayout()
 
         # Current Time Display
         self.current_time_label = QLabel("Current Time")
         self.current_time_display = QLabel()
-        layout.addWidget(self.current_time_label)
-        layout.addWidget(self.current_time_display)
+        layout.addWidget(self.current_time_label, 0, 0)
+        layout.addWidget(self.current_time_display, 0, 1)
 
         # Start Time Input
         self.start_time_label = QLabel("Start Time")
         self.start_time_input = QLineEdit()
         self.start_time_input.setPlaceholderText("08:00")  # Default placeholder
-        layout.addWidget(self.start_time_label)
-        layout.addWidget(self.start_time_input)
+        layout.addWidget(self.start_time_label, 1, 0)
+        layout.addWidget(self.start_time_input, 1, 1)
 
         # Time on the Clock Display
         self.time_on_clock_label = QLabel("Time on the clock")
         self.time_on_clock_display = QLabel()
-        layout.addWidget(self.time_on_clock_label)
-        layout.addWidget(self.time_on_clock_display)
+        layout.addWidget(self.time_on_clock_label, 2, 0)
+        layout.addWidget(self.time_on_clock_display, 2, 1)
 
         # OK Button
         self.ok_button = QPushButton("OK")
         self.ok_button.clicked.connect(self.calculate_time_on_clock)
-        layout.addWidget(self.ok_button)
+        self.button_close = QPushButton("Close")
+        self.button_close.clicked.connect(sys.exit)
+        layout.addWidget(self.ok_button, 3, 0)
+        layout.addWidget(self.button_close, 3, 1)
+
+        self.photo = QLabel()
+        ninja = get_image_path("ninja.png")
+        pixmap = QPixmap(ninja)
+        self.photo.setPixmap(pixmap)
+        layout.addWidget(self.photo, 0, 2, 3, 1)
 
         # Set Layout
         self.setLayout(layout)
