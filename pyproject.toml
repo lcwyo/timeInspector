@@ -1,22 +1,24 @@
-[tool.poetry]
+[project]
 name = "timeinspector"
 version = "0.1.0"
 description = "A  time calculator using PyQt"
-authors = ["lcwyo <lancechat@yahoo.com>"]
+authors = [{ name = "lcwyo", email = "lancechat@yahoo.com" }]
+requires-python = "~=3.13"
 readme = "README.md"
+dependencies = ["pyqt5~=5.15"]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-pyqt5 = "^5.15"
+[dependency-groups]
+dev = [
+    "ruff>=0.9.1,<0.10",
+    "pyright>=1.1.391,<2",
+]
 
-
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.9.1"
-pyright = "^1.1.391"
+[tool.uv]
+package = false
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 line-length = 88
